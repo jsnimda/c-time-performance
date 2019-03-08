@@ -1,0 +1,146 @@
+use for(int i=0; i<N; ++i) { ... code here ... }
+
+## Integer read and print test
+N = 2x10^6
+## Read
+    #### scanf
+    
+    sscanf("987654 123 456789", "%d", &a);
+    ~ 0.3 s
+    sscanf("987654 ", "%d", &a);
+    ~ 0.3 s
+    sscanf("987654", "%d", &a);
+    ~ 0.35 s
+    sscanf("123 ", "%d", &a);
+    ~ 0.28 s
+    sscanf("2 ", "%d", &a);
+    ~ 0.26 s
+    (time variance with first and second char length)
+    (space after number faster than end of string)
+    sscanf("987654 987654 987654 987654 ", "%d%d%d%d", &a, &a, &a, &a);
+    ~ 0.82 s
+    sscanf("987654 987654 987654 987654", "%d%d%d%d", &a, &a, &a, &a);
+    ~ 0.95 s
+    sscanf("987654 987654 987654 987654 ", "%d%d", &a, &a);
+    ~ 0.495 s
+    
+    >> conclusion ~ 0.2 s per %d
+    
+    #### atoi
+    a=atoi("987654 123 456789");
+    ~ 0.050 s
+    a=atoi("1 987654 987654 987654 ");
+    ~ 0.030 s
+    a=atoi("987654123");
+    ~ 0.064 s
+    (no impact on extra other numbers, but the first num length matter)
+    (no impact on space or end of string after number)
+    char* str = "987654 987654 987654 987654 ";
+    for{a=atoi(str);
+        a=atoi(str+7);
+        a=atoi(str+14);
+        a=atoi(str+21);}
+    ~ 0.190 s
+    for{a=atoi("987654 ");
+        a=atoi("987654 ");
+        a=atoi("987654 ");
+        a=atoi("987654 ");}
+    ~ 0.184 s
+    
+    >> conclusion ~ 0.050 s per number
+    
+    #### custom atoi
+    my_atoi("987654 ", &a);
+    ~ 0.006 s
+    N = 2x10^8
+    my_atoi("987654 ", &a);
+    ~ 0.653 s
+    N = 2x10^7
+    my_atoi("987654 ", &a);
+    ~ 0.069 s
+    
+    >> conclusion ~ 0.006 s per number
+
+## Print
+    #### printf
+    sprintf(out, "%d", 0);
+    ~ 0.315 s
+    sprintf(out, "%d", 987654);
+    ~ 0.336 s
+    sprintf(out, "123 %d 456", 987654);
+    ~ 0.341 s
+    sprintf(out, "%d %d %d %d", 987654, 987654, 987654, 987654);
+    ~ 0.9 s
+    sprintf(out, "%d %d %d %d ", 987654, 987654, 987654, 987654);
+    ~ 0.95 s
+    sprintf(out, "%d%d%d%d", 987654, 987654, 987654, 987654);
+    ~ 0.910 s
+    (extra characters not affect much, only %d does)
+    sprintf(out, "%d%d", 987654, 987654);
+    ~ 0.525 s
+    
+    >> conclusion ~ 0.25 s per %d
+    
+    #### custom itoa with any base
+    out = itoa(987654 ,10);
+    ~ 0.031 s
+    out = itoa(11 ,10);
+    ~ 0.005 s
+    out = itoa(987654123 ,10);
+    ~ 0.049 s
+    
+    >> conclusion ~ 0.030 s per number   
+    
+    #### custom itoa base 10
+    out = my_itoa(987654, &count);
+    ~ 0.018 s
+    out = my_itoa(987654123, &count);
+    ~ 0.028 s
+    
+    >> conclusion ~ 0.018 s per number  
+    
+    
+#### Section - my funcs
+
+int my_atoi(char *str, int *out)
+{ 
+    int val = 0;
+    char *i = str;
+    while(*str < '0' || *str > '9'){
+        ++str;
+    }
+    do {
+        val = val*10 + (*(str++) - '0');
+    } while (*str >= '0' && *str <= '9');
+    (*out) = val;
+    return str - i; //return the count of chars this func had read
+}
+char* itoa(int val, int base){
+	static char buf[32] = {0};
+	int i = 30;
+	for(; val && i ; --i, val /= base)
+		buf[i] = "0123456789abcdef"[val % base];
+	return &buf[i+1];
+}
+char* my_itoa(int val, int *out_count){
+	static char buf[12] = {0};
+    int tmp;
+	int i = 10;
+	do {
+        tmp = val;
+        val = val / 10;
+        buf[i] = (tmp - val * 10) + '0';
+        --i;
+    } while (val);
+    (*out_count) = 10 - i;
+	return buf + i+1;
+}
+
+__int32_t div10(__int32_t dividend)
+{
+    //some of the dividend >= 1073741829 produce wrong result,
+    // so lets just hope it dont happen
+
+    __int64_t invDivisor = 0x1999999A;
+    return (__int32_t) ((invDivisor * dividend) >> 32);
+}
