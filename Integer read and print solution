@@ -1,0 +1,72 @@
+int my_atoi(char *str, int *out)
+{ 
+    int val = 0;
+    char *i = str;
+    while(*str && (*str < '0' || *str > '9')){
+        ++str;
+    }
+    if(*str == 0){
+        return -1; // the string str does not contain valid numer
+    }
+    do {
+        val = val*10 + (*(str++) - '0');
+    } while (*str >= '0' && *str <= '9');
+    (*out) = val;
+    return str - i; //return the count of chars this func had read
+}
+char* my_itoa(int val, int *out_count){
+	static char buf[12] = {0};
+    int tmp;
+	int i = 10;
+	do {
+        tmp = val;
+        val = val / 10;
+        buf[i] = (tmp - val * 10) + '0';
+        --i;
+    } while (val);
+    (*out_count) = 10 - i;
+	return buf + i+1;
+}
+
+char* buf;
+int buf_size;
+int buf_ptr;
+void* init_buf(int size){
+    buf = malloc(size);
+    buf_size = size;
+    buf_ptr = buf_size-1;
+    return buf;
+}
+int scani(){
+    // 2^31-1 has 10 digits
+    // buf_size - buf_ptr >= 11, still ok; <=10, not ok
+    // size of remaining = buf_size - buf_ptr - 1
+    int remaining = buf_size - buf_ptr - 1;
+    int count;
+    int val;
+    if(remaining < 10){
+        // go fgets
+        strcpy(buf, buf + buf_ptr);
+        (void)!fgets(buf + remaining, buf_size - remaining, stdin);
+        buf_ptr = 0;
+    } 
+    // parse int
+    while((count = my_atoi(buf + buf_ptr, &val)) == -1){
+        (void)!fgets(buf, buf_size, stdin);
+        buf_ptr = 0;
+    };
+    buf_ptr += count; // maximum buf_ptr should be buf_size-1 which
+                      // pointing to \0
+    return val;
+}
+void printi(int num){
+    int count;
+    char* res = my_itoa(num, &count);
+    if(buf_ptr + count + 1 >= buf_size){ // plus 1 including space
+        fputs(buf, stdout);
+        buf_ptr = 0;
+    }
+    strcpy(buf + buf_ptr, res);
+    buf[buf_ptr+1] = ' ';
+    buf_ptr += count + 1;
+}
