@@ -1,6 +1,6 @@
 IO
 ===
-`inline` : Haven't tested yet, you might add `inline` to all the functions.
+`inline` : Haven't tested yet, you might add `static inline` to all the functions.
 ### Contents
 - [Includes](#Includes)
 - [Setup](#Setup)
